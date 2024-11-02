@@ -1,5 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
+import { generateMedRec } from "./actions";
+import { blobToBase64 } from "@/app/utils/blob-to-base-64";
 
 export default function ChatRoom() {
   const [status, setStatus] = useState("Waiting for audio input...");
@@ -7,6 +9,22 @@ export default function ChatRoom() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+
+  const processAudio = async (audioBlob: Blob) => {
+    try {
+      setStatus("Audio input received. Processing...");
+      const audioBlobBase64 = await blobToBase64(audioBlob);
+      const response = await generateMedRec({
+        audio: audioBlobBase64,
+        prompts: [],
+      });
+      console.log(response);
+      setStatus("Audio processed successfully.");
+    } catch (error) {
+      console.error("Error processing audio:", error);
+      setStatus("Error processing audio. Please try again.");
+    }
+  };
 
   const startRecording = async () => {
     try {
@@ -21,13 +39,14 @@ export default function ChatRoom() {
         }
       };
 
-      mediaRecorderRef.current.onstop = () => {
+      mediaRecorderRef.current.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, {
           type: "audio/wav",
         });
         const url = URL.createObjectURL(audioBlob);
+
         setAudioUrl(url);
-        setStatus("Audio input received. Processing...");
+        processAudio(audioBlob);
       };
 
       mediaRecorderRef.current.start();
