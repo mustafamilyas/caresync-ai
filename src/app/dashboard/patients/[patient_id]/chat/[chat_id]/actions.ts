@@ -1,8 +1,10 @@
 "use server";
 
+import { Prompt } from "@/app/types";
+
 export interface GenerateMedRecArgs {
   audio: string;
-  prompts: string[];
+  prompts: Prompt[];
 }
 
 export async function generateMedRec(
