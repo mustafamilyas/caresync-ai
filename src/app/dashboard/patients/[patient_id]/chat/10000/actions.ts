@@ -52,16 +52,19 @@ export interface SummarizationRequestData {
 export async function draftSummarization(
   transcribes: Array<string>
 ): Promise<Array<string>> {
-  const userMessage = transcribes.map((transcribe, index) => {
-    return index + 1 + ". " + transcribe;
-  }).join("\n");
+  const userMessage = transcribes
+    .map((transcribe, index) => {
+      return index + 1 + ". " + transcribe;
+    })
+    .join("\n");
 
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   const result = await groq.chat.completions.create({
     messages: [
       {
         role: "system",
-        content: " dalam bahasa indonesia, buatkanlah draft rekam medis/EHR dari transcript percakapan anamnesis dan tentukan juga kode ICD-10nya",
+        content:
+          "Dalam bahasa indonesia, buatkanlah draft rekam medis/EHR dari transcript percakapan anamnesis dan tentukan juga kode ICD-10nya",
       },
       {
         role: "user",
@@ -69,11 +72,13 @@ export async function draftSummarization(
       },
     ],
     model: "llama3-8b-8192",
-  })
+  });
   return result.choices[0]?.message?.content?.split("\n") || [];
 }
 
 export async function summarizeExampleTranscript() {
-  const transcribes = exampleData.map((data) => "Speaker_" + data.speaker + ": " + data.message);
+  const transcribes = exampleData.map(
+    (data) => "Speaker_" + data.speaker + ": " + data.message
+  );
   return draftSummarization(transcribes);
 }
