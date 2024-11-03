@@ -30,6 +30,15 @@ export interface SyncronousTranscribeRequestData {
   };
 }
 
+export interface Transcribe {
+  transcript: string;
+  final: boolean;
+  time_start: number;
+  time_end: number;
+  channel: number;
+  speaker_tag: number;
+}
+
 export interface TranscribeResponse {
   job_id: string; // "uid"
   status: string; // "complete";
@@ -45,14 +54,7 @@ export interface TranscribeResponse {
     channels: number;
   };
   result: {
-    data: Array<{
-      transcript: string;
-      final: boolean;
-      time_start: number;
-      time_end: number;
-      channel: number;
-      speaker_tag: number;
-    }>;
+    data: Array<Transcribe>;
     path: null;
     error: null;
     latency: number; //1.3314322093501687;

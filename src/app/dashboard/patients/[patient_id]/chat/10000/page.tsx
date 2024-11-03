@@ -1,31 +1,21 @@
 "use client";
 import { useState, useRef } from "react";
-import { draftSummarization, generateMedRec } from "./actions";
+import { generateMedRec, summarizeExampleTranscript } from "./actions";
 import ReactMarkdown from 'react-markdown';
-import {
-  TranscribeResponse,
-} from "@/app/types";
 import { blobToBase64 } from "@/app/utils/blob-to-base-64";
+import { exampleData } from "@/data/data";
 
 export default function ChatRoom() {
   const [status, setStatus] = useState("Waiting for audio input...");
   const [isRecording, setIsRecording] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [transcript, setTranscript] = useState<TranscribeResponse | null>(null);
   const [summary, setSummary] = useState<string[] | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const data = exampleData;
 
   const processSummarization = async () => {
-    if (transcript !== null) {
-      setSummary(await draftSummarization(
-        transcript.result.data
-          .sort((a, b) => a.time_start - b.time_start)
-          .map(
-            (transcript) => "Speaker " + transcript.speaker_tag + ": " + transcript.transcript
-          )
-      ));
-    }
+    setSummary(await summarizeExampleTranscript());
   }
 
   const processAudio = async (audioBlob: Blob) => {
@@ -37,7 +27,6 @@ export default function ChatRoom() {
         prompts: [],
       });
       console.log(response);
-      setTranscript(response);
       setStatus("Audio processed successfully.");
     } catch (error) {
       console.error("Error processing audio:", error);
@@ -107,10 +96,8 @@ export default function ChatRoom() {
       <h2>Transcript</h2>
       <div>
         {
-          transcript?.result.data
-            .sort((a, b) => a.time_start - b.time_start)
-            .map((transcript, index) => <div key={index}>
-              {"Speaker " + transcript.speaker_tag + ": " + transcript.transcript}
+          data?.map((transcript, index) => <div key={index}>
+              {"Speaker " + transcript.speaker + ": " + transcript.message}
               {/* {"Start: " + transcript.time_start.toFixed(2) + " | " + "End: " + transcript.time_end.toFixed(2)} */}
             </div>)
         }
