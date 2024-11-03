@@ -9,18 +9,14 @@ import {
   StopwatchIcon,
 } from "@radix-ui/react-icons";
 
-export const labels = [
+export const sexes = [
   {
-    value: "bug",
-    label: "Bug",
+    value: "male",
+    label: "Male",
   },
   {
-    value: "feature",
-    label: "Feature",
-  },
-  {
-    value: "documentation",
-    label: "Documentation",
+    value: "female",
+    label: "Female",
   },
 ];
 

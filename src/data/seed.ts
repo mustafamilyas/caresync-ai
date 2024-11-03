@@ -8,7 +8,7 @@ const tasks = Array.from(
   { length: 100 },
   () =>
     ({
-      id: `P-${faker.number.int({ min: 1000, max: 9999 })}`,
+      id: `P-${faker.string.ulid()}`,
       name: faker.person.fullName(),
       age: faker.number.int({ min: 1, max: 100 }),
       sex: faker.helpers.arrayElement(["female", "male"]),
