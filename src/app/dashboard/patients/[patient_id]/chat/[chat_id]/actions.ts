@@ -45,7 +45,7 @@ export async function generateDraftMedRec(
 
   const transcript = (await response.json()) as TranscribeResponse;
 
-  console.log(transcript.result.data)
+  console.log(transcript.result.data);
 
   return draftSummarization(
     transcript.result.data
@@ -59,27 +59,29 @@ export async function generateDraftMedRec(
 
 export async function speechToTextGroq(audio: Blob): Promise<string> {
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-  const file = new File([audio], "audio.wav", { type: "audio/wav" });
+  const buffer = await audio.arrayBuffer();
+  const filePath = "/tmp/audio.wav";
+  fs.writeFileSync(filePath, Buffer.from(buffer));
+  const fileStream = fs.createReadStream(filePath);
   const transcription = await groq.audio.transcriptions.create({
-    file: file, // Required path to audio file - replace with your audio file!
+    file: fileStream, // Required path to audio file - replace with your audio file!
     model: "whisper-large-v3-turbo", // Required model to use for transcription
     prompt: "Specify context or spelling", // Optional
     response_format: "json", // Optional
     language: "en", // Optional
     temperature: 0.0, // Optional
   });
-  return transcription.text
+  console.log("🚀 ~ speechToTextGroq ~ transcription:", transcription);
+  fs.unlinkSync(filePath); // Clean up the temporary file
+  return transcription.text;
 }
-
 
 export async function generateDraftMedRecGroq(
   blob: Blob
 ): Promise<Array<string>> {
   const result = await speechToTextGroq(blob);
   console.log(result);
-  return draftSummarization(
-    [result]
-  );
+  return draftSummarization([result]);
 }
 
 export interface SummarizationRequestData {
