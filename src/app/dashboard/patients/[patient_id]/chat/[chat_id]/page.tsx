@@ -14,13 +14,7 @@ import ReactMarkdown from "react-markdown";
 import { useForm } from "react-hook-form";
 
 export default function ChatRoom() {
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm();
+  const { register, handleSubmit, setValue } = useForm();
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   // Initialize the recorder controls using the hook
