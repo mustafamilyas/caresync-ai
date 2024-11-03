@@ -73,14 +73,17 @@ export async function draftSummarization(
       {
         role: "system",
         content:
-          "buat draft rekam medis/EHR dari transcript percakapan anamnesis dan tentukan juga kode ICD-10nya dalam bahasa indonesia",
+          "You are a helpful assistant that summarize a dialogue transcript to a draft of medical record/EHR. You will give the draft in Indonesian language/bahasa indonesia and determine the ICD 10.",
       },
       {
         role: "user",
-        content: userMessage,
+        content:
+          "Given this dialogue\n" +
+          userMessage +
+          "\n\nMake me the draft of the patient medical record/EHR in Indonesian language/bahasa indonesia and determine the ICD 10.",
       },
     ],
-    model: "llama3-8b-8192",
+    model: "llama-3.2-11b-vision-preview",
   });
   return result.choices[0]?.message?.content?.split("\n") || [];
 }
@@ -92,7 +95,7 @@ export async function refineSummarization(prompts: Prompt[]) {
       {
         role: "system",
         content:
-          "buat draft rekam medis/EHR dari transcript percakapan anamnesis dan tentukan juga kode ICD-10nya dalam bahasa indonesia",
+          "You are a helpful assistant that summarize a dialogue transcript to a draft of medical record/EHR. You will give the draft in Indonesian language/bahasa indonesia and determine the ICD 10.",
       },
       ...prompts.map(
         (prompt) =>
@@ -102,7 +105,7 @@ export async function refineSummarization(prompts: Prompt[]) {
           } as ChatCompletionMessageParam)
       ),
     ],
-    model: "llama3-8b-8192",
+    model: "llama-3.2-11b-vision-preview",
   });
   return result.choices[0]?.message?.content?.split("\n") || [];
 }
