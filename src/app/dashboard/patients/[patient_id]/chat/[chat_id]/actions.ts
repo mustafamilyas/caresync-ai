@@ -12,9 +12,9 @@ export interface GenerateMedRecArgs {
   prompts: Prompt[];
 }
 
-export async function generateMedRec(
+export async function generateDraftMedRec(
   args: GenerateMedRecArgs
-): Promise<TranscribeResponse> {
+): Promise<Array<string>> {
   const transcribeUrl = process.env.TRANSCRIBE_URL || "";
   const apiKey = process.env.TRANSCRIBE_API_KEY;
   if (!transcribeUrl || !apiKey) {
@@ -41,7 +41,16 @@ export async function generateMedRec(
     body: JSON.stringify(payload),
   });
 
-  return response.json();
+  const transcript = (await response.json()) as TranscribeResponse;
+
+  return draftSummarization(
+    transcript.result.data
+      .sort((a, b) => a.time_start - b.time_start)
+      .map(
+        (transcript) =>
+          "Speaker " + transcript.speaker_tag + ": " + transcript.transcript
+      )
+  );
 }
 
 export interface SummarizationRequestData {
@@ -51,16 +60,19 @@ export interface SummarizationRequestData {
 export async function draftSummarization(
   transcribes: Array<string>
 ): Promise<Array<string>> {
-  const userMessage = transcribes.map((transcribe, index) => {
-    return index + 1 + ". " + transcribe;
-  }).join("\n");
+  const userMessage = transcribes
+    .map((transcribe, index) => {
+      return index + 1 + ". " + transcribe;
+    })
+    .join("\n");
 
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   const result = await groq.chat.completions.create({
     messages: [
       {
         role: "system",
-        content: "buat draft rekam medis/EHR dari transcript percakapan anamnesis dan tentukan juga kode ICD-10nya dalam bahasa indonesia",
+        content:
+          "buat draft rekam medis/EHR dari transcript percakapan anamnesis dan tentukan juga kode ICD-10nya dalam bahasa indonesia",
       },
       {
         role: "user",
@@ -68,6 +80,6 @@ export async function draftSummarization(
       },
     ],
     model: "llama3-8b-8192",
-  })
+  });
   return result.choices[0]?.message?.content?.split("\n") || [];
 }

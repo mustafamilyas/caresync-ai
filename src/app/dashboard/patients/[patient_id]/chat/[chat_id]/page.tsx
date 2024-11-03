@@ -1,132 +1,124 @@
 "use client";
-import { useState, useRef } from "react";
-import { draftSummarization, generateMedRec } from "./actions";
-import ReactMarkdown from 'react-markdown';
-import {
-  TranscribeResponse,
-} from "@/app/types";
+import { useCallback, useEffect, useState } from "react";
+import { generateDraftMedRec } from "./actions";
 import { blobToBase64 } from "@/app/utils/blob-to-base-64";
+import { useVoiceVisualizer, VoiceVisualizer } from "react-voice-visualizer";
+import Link from "next/link";
+import { ArrowLeftIcon } from "@radix-ui/react-icons";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { SendHorizontalIcon } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Prompt } from "@/app/types";
+import ReactMarkdown from "react-markdown";
+import { useFormStatus } from "react-dom";
 
 export default function ChatRoom() {
-  const [status, setStatus] = useState("Waiting for audio input...");
-  const [isRecording, setIsRecording] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [transcript, setTranscript] = useState<TranscribeResponse | null>(null);
-  const [summary, setSummary] = useState<string[] | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const { pending } = useFormStatus();
+  // Initialize the recorder controls using the hook
+  const recorderControls = useVoiceVisualizer();
+  const [voiceShouldStack, setVoiceShouldStack] = useState(false);
+  const {
+    // ... (Extracted controls and states, if necessary)
+    recordedBlob,
+    error,
+  } = recorderControls;
 
-  const processSummarization = async () => {
-    if (transcript !== null) {
-      setSummary(await draftSummarization(
-        transcript.result.data
-          .sort((a, b) => a.time_start - b.time_start)
-          .map(
-            (transcript) => "Speaker " + transcript.speaker_tag + ": " + transcript.transcript
-          )
-      ));
-    }
-  }
+  const addPrompt = useCallback(
+    (prompt: Prompt) => {
+      setPrompts((prevPrompts) => [...prevPrompts, prompt]);
+    },
+    [setPrompts]
+  );
 
-  const processAudio = async (audioBlob: Blob) => {
-    try {
-      setStatus("Audio input received. Processing...");
-      const audioBlobBase64 = await blobToBase64(audioBlob);
-      const response = await generateMedRec({
-        audio: audioBlobBase64,
-        prompts: [],
-      });
-      console.log(response);
-      setTranscript(response);
-      setStatus("Audio processed successfully.");
-    } catch (error) {
-      console.error("Error processing audio:", error);
-      setStatus("Error processing audio. Please try again.");
-    }
-  };
-
-  const startRecording = async () => {
-    try {
-      setStatus("Recording audio...");
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = [];
-
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/wav",
+  const processAudio = useCallback(
+    async (audioBlob: Blob) => {
+      try {
+        const audioBlobBase64 = await blobToBase64(audioBlob);
+        const response = await generateDraftMedRec({
+          audio: audioBlobBase64,
+          prompts: [],
         });
-        const url = URL.createObjectURL(audioBlob);
+        addPrompt({
+          id: crypto.getRandomValues(new Uint32Array(1))[0].toString(),
+          content: response.join("\n"),
+          sender: "bot",
+        });
+      } catch (error) {
+        console.error("Error processing audio:", error);
+      }
+    },
+    [addPrompt]
+  );
 
-        setAudioUrl(url);
-        processAudio(audioBlob);
-      };
+  // Get the recorded audio blob
+  useEffect(() => {
+    if (!recordedBlob) return;
+    setTimeout(() => {
+      setVoiceShouldStack(true);
+    }, 500);
+    processAudio(recordedBlob);
+  }, [recordedBlob, processAudio]);
 
-      mediaRecorderRef.current.start();
-      setIsRecording(true);
-    } catch (error) {
-      console.error("Error accessing microphone:", error);
-      setStatus(
-        "Error accessing microphone. Please check your browser settings."
-      );
-    }
-  };
+  // Get the error when it occurs
+  useEffect(() => {
+    if (!error) return;
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
+    console.error(error);
+  }, [error]);
   return (
-    <div>
-      <h1>Microphone Recorder</h1>
-      <button
-        onClick={startRecording}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+    <div className="relative px-2 h-screen overflow-auto">
+      <Link
+        href="/dashboard"
+        className="fixed z-10 top-5 left-5 p-2 rounded-full bg-primary-foreground shadow-lg hover:bg-muted"
       >
-        Start Recording
-      </button>
-      <button
-        onClick={stopRecording}
-        disabled={!isRecording}
-        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        <ArrowLeftIcon className="w-6 h-6 text-primary" />
+      </Link>
+      <div
+        className={cn(
+          "w-full max-w-7xl  mx-auto min-h-screen transition-all relative duration-500"
+        )}
       >
-        Stop Recording
-      </button>
-      {audioUrl ? (
-        <audio id="audioPlayback" controls src={audioUrl}></audio>
-      ) : null}
-      <div>{status}</div>
-      <h2>Transcript</h2>
-      <div>
-        {
-          transcript?.result.data
-            .sort((a, b) => a.time_start - b.time_start)
-            .map((transcript, index) => <div key={index}>
-              {"Speaker " + transcript.speaker_tag + ": " + transcript.transcript}
-              {/* {"Start: " + transcript.time_start.toFixed(2) + " | " + "End: " + transcript.time_end.toFixed(2)} */}
-            </div>)
-        }
+        <VoiceVisualizer
+          controls={recorderControls}
+          controlButtonsClassName={recordedBlob ? "hidden" : ""}
+          mainBarColor="hsl(var(--primary))"
+          mainContainerClassName={cn(
+            "w-full will-change-transform transform duration-500",
+            recordedBlob
+              ? `${voiceShouldStack ? "unset" : "absolute"} top-0 translate-y-0`
+              : "absolute -translate-y-1/2 top-1/2"
+          )}
+        />
+        {voiceShouldStack
+          ? prompts.map((prompt, index) => (
+              <div
+                key={index}
+                className="p-2 bg-white border border-input rounded-lg my-2"
+              >
+                <ReactMarkdown>{prompt.content}</ReactMarkdown>
+              </div>
+            ))
+          : null}
+        {pending ? <div>Processing...</div> : null}
       </div>
-
-      <button
-        onClick={processSummarization}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      <form
+        className={cn(
+          "fixed left-1/2 bottom-5 -translate-x-1/2 max-w-7xl w-4/6 flex items-center justify-between p-2 bg-white border border-input gap-2",
+          "transition-transform duration-500"
+          // recordedBlob ? "translate-y-0" : "translate-y-40"
+        )}
       >
-        process transcript summarization
-      </button>
-      <div>
-        {
-          summary?.map((summary, index) => <ReactMarkdown key={index}>{summary}</ReactMarkdown>)
-        }
-      </div>
+        <Textarea
+          placeholder="Send your message here"
+          className="flex-grow h-3 resize-none"
+          rows={1}
+        />
+        <Button type="submit">
+          <SendHorizontalIcon />
+        </Button>
+      </form>
     </div>
   );
 }
