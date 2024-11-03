@@ -12,6 +12,12 @@ import { Prompt } from "@/app/types";
 import ReactMarkdown from "react-markdown";
 import { useForm } from "react-hook-form";
 
+const dummyPrompts: Prompt[] = new Array(20).fill(null).map((_, index) => ({
+  id: index.toString(),
+  content: "Hello, world!",
+  sender: "bot",
+}));
+
 export default function ChatRoom() {
   const { register, handleSubmit, setValue } = useForm();
   const [prompts, setPrompts] = useState<Prompt[]>([]);
@@ -101,7 +107,7 @@ export default function ChatRoom() {
       </Link>
       <div
         className={cn(
-          "w-4/5 max-w-7xl mx-auto min-h-screen transition-all relative duration-500"
+          "w-4/5 max-w-7xl pb-40 mx-auto min-h-screen transition-all relative duration-500"
         )}
       >
         <VoiceVisualizer
