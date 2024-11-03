@@ -11,26 +11,7 @@ import { SendHorizontalIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Prompt } from "@/app/types";
 import ReactMarkdown from "react-markdown";
-import { useFormStatus } from "react-dom";
 import { useForm } from "react-hook-form";
-
-const dummyPrompts: Prompt[] = [
-  {
-    id: "1",
-    content: "Hello, how can I help you today?",
-    sender: "bot",
-  },
-  {
-    id: "2",
-    content: "I'm feeling unwell",
-    sender: "user",
-  },
-  {
-    id: "3",
-    content: "Can you describe your symptoms?",
-    sender: "bot",
-  },
-];
 
 export default function ChatRoom() {
   const {
@@ -40,8 +21,8 @@ export default function ChatRoom() {
     setValue,
     formState: { errors },
   } = useForm();
-  const [prompts, setPrompts] = useState<Prompt[]>(dummyPrompts);
-  const { pending } = useFormStatus();
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   // Initialize the recorder controls using the hook
   const recorderControls = useVoiceVisualizer();
   const [voiceShouldStack, setVoiceShouldStack] = useState(false);
@@ -61,6 +42,7 @@ export default function ChatRoom() {
   const submitMessage = useCallback(
     async (data) => {
       try {
+        setIsLoading(true);
         const nextPrompt: Prompt = {
           id: crypto.getRandomValues(new Uint32Array(1))[0].toString(),
           content: data.message,
@@ -77,6 +59,8 @@ export default function ChatRoom() {
       } catch (error) {
         console.error("Error processing message:", error);
       }
+
+      setIsLoading(false);
     },
     [addPrompt, prompts, setValue]
   );
@@ -84,6 +68,7 @@ export default function ChatRoom() {
   const processAudio = useCallback(
     async (audioBlob: Blob) => {
       try {
+        setIsLoading(true);
         const audioBlobBase64 = await blobToBase64(audioBlob);
         const response = await generateDraftMedRec({
           audio: audioBlobBase64,
@@ -97,6 +82,7 @@ export default function ChatRoom() {
       } catch (error) {
         console.error("Error processing audio:", error);
       }
+      setIsLoading(false);
     },
     [addPrompt]
   );
@@ -158,7 +144,7 @@ export default function ChatRoom() {
               </div>
             ))
           : null}
-        {pending ? <div>Processing...</div> : null}
+        {isLoading ? <div>Processing...</div> : null}
       </div>
       <form
         className={cn(
