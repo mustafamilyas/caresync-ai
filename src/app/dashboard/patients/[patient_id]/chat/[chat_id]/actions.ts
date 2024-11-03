@@ -1,6 +1,10 @@
 "use server";
 
-import { Prompt } from "@/app/types";
+import {
+  Prompt,
+  SyncronousTranscribeRequestData,
+  TranscribeResponse,
+} from "@/app/types";
 
 export interface GenerateMedRecArgs {
   audio: string;
@@ -9,13 +13,13 @@ export interface GenerateMedRecArgs {
 
 export async function generateMedRec(
   args: GenerateMedRecArgs
-): Promise<{ result: string }> {
+): Promise<TranscribeResponse> {
   const transcribeUrl = process.env.TRANSCRIBE_URL || "";
   const apiKey = process.env.TRANSCRIBE_API_KEY;
   if (!transcribeUrl || !apiKey) {
     throw new Error("Transcribe URL or API key not found");
   }
-  const payload = {
+  const payload: SyncronousTranscribeRequestData = {
     config: {
       model: "stt-general",
       speaker_count: 2,
