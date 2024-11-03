@@ -2273,6 +2273,7 @@ __metadata:
     postcss: "npm:^8"
     react: "npm:19.0.0-rc-02c0e824-20241028"
     react-dom: "npm:19.0.0-rc-02c0e824-20241028"
+    react-hook-form: "npm:^7.53.1"
     react-voice-visualizer: "npm:^2.0.4"
     tailwind-merge: "npm:^2.5.4"
     tailwindcss: "npm:^3.4.1"
@@ -4779,6 +4780,15 @@ __metadata:
   peerDependencies:
     react: 19.0.0-rc-02c0e824-20241028
   checksum: 10c0/3c3d32edaac11ab0811cbd66e32368ddf59a5a35f2704296bda6bffed56845997068edbe3d65840b401e571ee02f4b03b5c1277fa026c9a3778dcc1344be11d7
+  languageName: node
+  linkType: hard
+
+"react-hook-form@npm:^7.53.1":
+  version: 7.53.1
+  resolution: "react-hook-form@npm:7.53.1"
+  peerDependencies:
+    react: ^16.8.0 || ^17 || ^18 || ^19
+  checksum: 10c0/dd2466359a633f873755b366d367d51ab17100566b687fb3b098f704232bc6ab1c79d29f879151e492880ca5eeac35e9425fbe5a309e2a55f7a4b5baf7826e8d
   languageName: node
   linkType: hard
 

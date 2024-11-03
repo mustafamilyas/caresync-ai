@@ -6,6 +6,10 @@ import { useVoiceVisualizer, VoiceVisualizer } from "react-voice-visualizer";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { SendHorizonalIcon, SendHorizontalIcon } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function ChatRoom() {
   // Initialize the recorder controls using the hook
@@ -49,7 +53,7 @@ export default function ChatRoom() {
     <div className="relative px-2 h-screen overflow-auto">
       <Link
         href="/dashboard"
-        className="absolute top-5 left-5 p-2 rounded-full bg-white shadow-lg hover:bg-gray-100"
+        className="fixed z-10 top-5 left-5 p-2 rounded-full bg-primary-foreground shadow-lg hover:bg-muted"
       >
         <ArrowLeftIcon className="w-6 h-6 text-primary" />
       </Link>
@@ -70,6 +74,22 @@ export default function ChatRoom() {
           )}
         />
       </div>
+      <form
+        className={cn(
+          "fixed left-1/2 bottom-5 -translate-x-1/2 w-full max-w-7xl flex items-center justify-between p-2 bg-white border border-input gap-2",
+          "transition-transform duration-500",
+          recordedBlob ? "translate-y-0" : "translate-y-40"
+        )}
+      >
+        <Textarea
+          placeholder="Send your message here"
+          className="flex-grow h-3 resize-none"
+          rows={1}
+        />
+        <Button type="submit">
+          <SendHorizontalIcon />
+        </Button>
+      </form>
     </div>
   );
 }
