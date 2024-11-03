@@ -12,11 +12,11 @@ import { Prompt } from "@/app/types";
 import ReactMarkdown from "react-markdown";
 import { useForm } from "react-hook-form";
 
-const dummyPrompts: Prompt[] = new Array(20).fill(null).map((_, index) => ({
-  id: index.toString(),
-  content: "Hello, world!",
-  sender: "bot",
-}));
+// const dummyPrompts: Prompt[] = new Array(20).fill(null).map((_, index) => ({
+//   id: index.toString(),
+//   content: "Hello, world!",
+//   sender: "bot",
+// }));
 
 export default function ChatRoom() {
   const { register, handleSubmit, setValue } = useForm();
@@ -39,7 +39,7 @@ export default function ChatRoom() {
   );
 
   const submitMessage = useCallback(
-    async (data) => {
+    async (data: any) => {
       try {
         setIsLoading(true);
         const nextPrompt: Prompt = {
