@@ -29,7 +29,9 @@ export function DataTableRowActions<TData>({
     <div className="flex items-center gap-2">
       <Link
         href={`/dashboard/patients/${row.original?.id ?? 100}/chat/test`}
-        className={buttonVariants()}
+        className={buttonVariants({
+          size: "sm",
+        })}
       >
         Open chat
       </Link>

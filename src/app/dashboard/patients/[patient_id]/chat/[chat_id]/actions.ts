@@ -6,6 +6,7 @@ import {
   TranscribeResponse,
 } from "@/app/types";
 import Groq from "groq-sdk";
+import { ChatCompletionMessageParam } from "groq-sdk/resources/chat/completions.mjs";
 
 export interface GenerateMedRecArgs {
   audio: string;
@@ -78,6 +79,28 @@ export async function draftSummarization(
         role: "user",
         content: userMessage,
       },
+    ],
+    model: "llama3-8b-8192",
+  });
+  return result.choices[0]?.message?.content?.split("\n") || [];
+}
+
+export async function refineSummarization(prompts: Prompt[]) {
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  const result = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content:
+          "buat draft rekam medis/EHR dari transcript percakapan anamnesis dan tentukan juga kode ICD-10nya dalam bahasa indonesia",
+      },
+      ...prompts.map(
+        (prompt) =>
+          ({
+            role: prompt.sender === "bot" ? "assistant" : "user",
+            content: prompt.content,
+          } as ChatCompletionMessageParam)
+      ),
     ],
     model: "llama3-8b-8192",
   });

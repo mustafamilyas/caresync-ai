@@ -106,8 +106,8 @@ export default function ChatRoom() {
       <form
         className={cn(
           "fixed left-1/2 bottom-5 -translate-x-1/2 max-w-7xl w-4/6 flex items-center justify-between p-2 bg-white border border-input gap-2",
-          "transition-transform duration-500"
-          // recordedBlob ? "translate-y-0" : "translate-y-40"
+          "transition-transform duration-500",
+          recordedBlob ? "translate-y-0" : "translate-y-40"
         )}
       >
         <Textarea
