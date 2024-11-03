@@ -1,7 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { generateDraftMedRec, refineSummarization } from "./actions";
-import { blobToBase64 } from "@/app/utils/blob-to-base-64";
+import { generateDraftMedRecGroq, refineSummarization } from "./actions";
 import { useVoiceVisualizer, VoiceVisualizer } from "react-voice-visualizer";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
@@ -63,11 +62,7 @@ export default function ChatRoom() {
     async (audioBlob: Blob) => {
       try {
         setIsLoading(true);
-        const audioBlobBase64 = await blobToBase64(audioBlob);
-        const response = await generateDraftMedRec({
-          audio: audioBlobBase64,
-          prompts: [],
-        });
+        const response = await generateDraftMedRecGroq(audioBlob);
         addPrompt({
           id: crypto.getRandomValues(new Uint32Array(1))[0].toString(),
           content: response.join("\n"),

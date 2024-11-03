@@ -6,6 +6,7 @@ import {
   TranscribeResponse,
 } from "@/app/types";
 import Groq from "groq-sdk";
+import fs from "fs";
 import { ChatCompletionMessageParam } from "groq-sdk/resources/chat/completions.mjs";
 
 export interface GenerateMedRecArgs {
@@ -44,6 +45,8 @@ export async function generateDraftMedRec(
 
   const transcript = (await response.json()) as TranscribeResponse;
 
+  console.log(transcript.result.data)
+
   return draftSummarization(
     transcript.result.data
       .sort((a, b) => a.time_start - b.time_start)
@@ -51,6 +54,31 @@ export async function generateDraftMedRec(
         (transcript) =>
           "Speaker " + transcript.speaker_tag + ": " + transcript.transcript
       )
+  );
+}
+
+export async function speechToTextGroq(audio: Blob): Promise<string> {
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  const file = new File([audio], "audio.wav", { type: "audio/wav" });
+  const transcription = await groq.audio.transcriptions.create({
+    file: file, // Required path to audio file - replace with your audio file!
+    model: "whisper-large-v3-turbo", // Required model to use for transcription
+    prompt: "Specify context or spelling", // Optional
+    response_format: "json", // Optional
+    language: "en", // Optional
+    temperature: 0.0, // Optional
+  });
+  return transcription.text
+}
+
+
+export async function generateDraftMedRecGroq(
+  blob: Blob
+): Promise<Array<string>> {
+  const result = await speechToTextGroq(blob);
+  console.log(result);
+  return draftSummarization(
+    [result]
   );
 }
 
