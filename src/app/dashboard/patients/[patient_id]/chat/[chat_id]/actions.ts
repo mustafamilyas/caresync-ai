@@ -108,9 +108,9 @@ export async function draftSummarization(
       {
         role: "user",
         content:
-          "Given this dialogue\n" +
+          "Given this dialogue\n\```" +
           userMessage +
-          "\n\nMake me the draft of the patient medical record/EHR in Indonesian language/bahasa indonesia and determine the ICD 10.",
+          "\```\n\nMake me the draft of the patient medical record/EHR in Indonesian language/bahasa indonesia and determine the ICD 10. The medical record draft should include the following section, Identitas Pasien, Riwayat Medis dan Alergi, Hasil Pemeriksaan, Anamnesis, Diagnosis, Tindakan, ICD 10, Catatan Dokter. You don't need to translate technical medical terms/jargon. Fill with just '-' if there's no information mentioned about the section",
       },
     ],
     model: "llama-3.2-11b-vision-preview",
@@ -122,11 +122,6 @@ export async function refineSummarization(prompts: Prompt[]) {
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   const result = await groq.chat.completions.create({
     messages: [
-      {
-        role: "system",
-        content:
-          "You are a helpful assistant that summarize a dialogue transcript to a draft of medical record/EHR. You will give the draft in Indonesian language/bahasa indonesia and determine the ICD 10.",
-      },
       ...prompts.map(
         (prompt) =>
           ({
