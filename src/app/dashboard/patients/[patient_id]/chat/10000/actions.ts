@@ -5,6 +5,7 @@ import {
   SyncronousTranscribeRequestData,
   TranscribeResponse,
 } from "@/app/types";
+import { exampleData } from "@/data/data";
 import Groq from "groq-sdk";
 
 export interface GenerateMedRecArgs {
@@ -60,7 +61,7 @@ export async function draftSummarization(
     messages: [
       {
         role: "system",
-        content: "buat draft rekam medis/EHR dari transcript percakapan anamnesis dan tentukan juga kode ICD-10nya dalam bahasa indonesia",
+        content: " dalam bahasa indonesia, buatkanlah draft rekam medis/EHR dari transcript percakapan anamnesis dan tentukan juga kode ICD-10nya",
       },
       {
         role: "user",
@@ -70,4 +71,9 @@ export async function draftSummarization(
     model: "llama3-8b-8192",
   })
   return result.choices[0]?.message?.content?.split("\n") || [];
+}
+
+export async function summarizeExampleTranscript() {
+  const transcribes = exampleData.map((data) => "Speaker_" + data.speaker + ": " + data.message);
+  return draftSummarization(transcribes);
 }
