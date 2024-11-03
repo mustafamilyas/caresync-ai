@@ -20,7 +20,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 
     setTimeout(() => {
       setIsLoading(false);
-      router.push("/dashboard/patients/1/chat/1");
+      router.push("/dashboard");
     }, 3000);
   }
 
