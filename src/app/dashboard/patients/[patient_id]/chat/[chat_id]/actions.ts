@@ -110,10 +110,15 @@ export async function draftSummarization(
         content:
           "Given this dialogue\n\```" +
           userMessage +
-          "\```\n\nMake me the draft of the patient medical record/EHR in Indonesian language/bahasa indonesia and determine the ICD 10. The medical record draft should include the following section, Identitas Pasien, Riwayat Medis dan Alergi, Hasil Pemeriksaan, Anamnesis, Diagnosis, Tindakan, ICD 10, Catatan Dokter. You don't need to translate technical medical terms/jargon. Fill with just '-' if there's no information mentioned about the section",
+          "\```\n\nMake me the draft of the patient medical record/EHR in Indonesian language/bahasa indonesia and determine the ICD 10. The medical record draft should include the following section, Identitas Pasien, Riwayat Medis dan Alergi, Hasil Pemeriksaan, Anamnesis, Diagnosis, Tindakan, ICD 10, Catatan Dokter. You don't need to translate technical medical terms/jargon. Fill with just '-' if there's no information mentioned about the section. Use Markdown format.",
+      },
+      {
+        role: "user",
+        content: "happen on " + new Date().toDateString(),
       },
     ],
-    model: "llama-3.2-11b-vision-preview",
+    model: "llama-3.2-90b-vision-preview",
+    temperature: 0.1
   });
   return result.choices[0]?.message?.content?.split("\n") || [];
 }
@@ -122,6 +127,20 @@ export async function refineSummarization(prompts: Prompt[]) {
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   const result = await groq.chat.completions.create({
     messages: [
+      {
+        role: "system",
+        content:
+          "You are a helpful assistant that summarize a dialogue transcript to a draft of medical record/EHR. You will give the draft in Indonesian language/bahasa indonesia and determine the ICD 10.",
+      },
+      {
+        role: "user",
+        content:
+         "Make me the draft of the patient medical record/EHR in Indonesian language/bahasa indonesia and determine the ICD 10. The medical record draft should include the following section, Identitas Pasien, Riwayat Medis dan Alergi, Hasil Pemeriksaan, Anamnesis, Diagnosis, Tindakan, ICD 10, Catatan Dokter. You don't need to translate technical medical terms/jargon. Fill with just '-' if there's no information mentioned about the section. Use Markdown format.",
+      },
+      {
+        role: "user",
+        content: "happen on " + new Date().toDateString(),
+      },
       ...prompts.map(
         (prompt) =>
           ({
@@ -130,7 +149,7 @@ export async function refineSummarization(prompts: Prompt[]) {
           } as ChatCompletionMessageParam)
       ),
     ],
-    model: "llama-3.2-11b-vision-preview",
+    model: "llama-3.2-90b-vision-preview",
   });
   return result.choices[0]?.message?.content?.split("\n") || [];
 }
