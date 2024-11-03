@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "tsx ./src/app/dashboard/data/seed.ts"
+    "seed": "tsx ./src/data/seed.ts"
   },
   "dependencies": {
     "@faker-js/faker": "^9.1.0",
