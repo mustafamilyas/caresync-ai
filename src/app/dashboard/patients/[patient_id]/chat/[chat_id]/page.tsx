@@ -106,7 +106,7 @@ export default function ChatRoom() {
       </Link>
       <div
         className={cn(
-          "w-full max-w-7xl  mx-auto min-h-screen transition-all relative duration-500"
+          "w-4/5 max-w-7xl mx-auto min-h-screen transition-all relative duration-500"
         )}
       >
         <VoiceVisualizer
@@ -138,7 +138,11 @@ export default function ChatRoom() {
               </div>
             ))
           : null}
-        {isLoading ? <div>Processing...</div> : null}
+        {isLoading && voiceShouldStack ? (
+          <div className="w-full flex items-center justify-center">
+            <span className="loader"></span>
+          </div>
+        ) : null}
       </div>
       <form
         className={cn(
