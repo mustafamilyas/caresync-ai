@@ -68,7 +68,7 @@ export async function speechToTextGroq(audio: Blob): Promise<string> {
     model: "whisper-large-v3-turbo", // Required model to use for transcription
     prompt: "Specify context or spelling", // Optional
     response_format: "json", // Optional
-    language: "en", // Optional
+    language: "id", // Optional
     temperature: 0.0, // Optional
   });
   console.log("🚀 ~ speechToTextGroq ~ transcription:", transcription);
