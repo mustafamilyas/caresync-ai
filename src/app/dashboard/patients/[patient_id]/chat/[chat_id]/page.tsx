@@ -10,8 +10,33 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SendHorizonalIcon, SendHorizontalIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { Prompt } from "@/app/types";
+
+const dummyPrompts: Prompt[] = [
+  {
+    id: "1",
+    content: "What brings you here today?",
+    sender: "bot",
+  },
+  {
+    id: "2",
+    content: "How are you feeling?",
+    sender: "user",
+  },
+  {
+    id: "3",
+    content: "What are your symptoms?",
+    sender: "bot",
+  },
+  {
+    id: "4",
+    content: "How long have you been feeling this way?",
+    sender: "user",
+  },
+];
 
 export default function ChatRoom() {
+  const [prompts, setPrompts] = useState<Prompt[]>(dummyPrompts);
   // Initialize the recorder controls using the hook
   const recorderControls = useVoiceVisualizer();
   const [voiceShouldStack, setVoiceShouldStack] = useState(false);
@@ -73,6 +98,16 @@ export default function ChatRoom() {
               : "absolute -translate-y-1/2 top-1/2"
           )}
         />
+        {voiceShouldStack
+          ? prompts.map((prompt, index) => (
+              <div
+                key={index}
+                className="p-2 bg-white border border-input rounded-lg my-2"
+              >
+                <p>{prompt.content}</p>
+              </div>
+            ))
+          : null}
       </div>
       <form
         className={cn(
