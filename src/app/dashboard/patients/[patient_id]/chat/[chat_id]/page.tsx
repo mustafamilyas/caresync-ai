@@ -1,90 +1,43 @@
 "use client";
-import { useState, useRef } from "react";
+import { useEffect } from "react";
 import { generateMedRec } from "./actions";
 import { blobToBase64 } from "@/app/utils/blob-to-base-64";
+import { useVoiceVisualizer, VoiceVisualizer } from "react-voice-visualizer";
 
 export default function ChatRoom() {
-  const [status, setStatus] = useState("Waiting for audio input...");
-  const [isRecording, setIsRecording] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  // Initialize the recorder controls using the hook
+  const recorderControls = useVoiceVisualizer();
+  const {
+    // ... (Extracted controls and states, if necessary)
+    recordedBlob,
+    error,
+  } = recorderControls;
 
   const processAudio = async (audioBlob: Blob) => {
     try {
-      setStatus("Audio input received. Processing...");
       const audioBlobBase64 = await blobToBase64(audioBlob);
       const response = await generateMedRec({
         audio: audioBlobBase64,
         prompts: [],
       });
       console.log(response);
-      setStatus("Audio processed successfully.");
     } catch (error) {
       console.error("Error processing audio:", error);
-      setStatus("Error processing audio. Please try again.");
     }
   };
 
-  const startRecording = async () => {
-    try {
-      setStatus("Recording audio...");
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = [];
+  // Get the recorded audio blob
+  useEffect(() => {
+    if (!recordedBlob) return;
 
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
+    processAudio(recordedBlob);
+  }, [recordedBlob, error]);
 
-      mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/wav",
-        });
-        const url = URL.createObjectURL(audioBlob);
+  // Get the error when it occurs
+  useEffect(() => {
+    if (!error) return;
 
-        setAudioUrl(url);
-        processAudio(audioBlob);
-      };
-
-      mediaRecorderRef.current.start();
-      setIsRecording(true);
-    } catch (error) {
-      console.error("Error accessing microphone:", error);
-      setStatus(
-        "Error accessing microphone. Please check your browser settings."
-      );
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
-  return (
-    <div>
-      <h1>Microphone Recorder</h1>
-      <button
-        onClick={startRecording}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Start Recording
-      </button>
-      <button
-        onClick={stopRecording}
-        disabled={!isRecording}
-        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Stop Recording
-      </button>
-      {audioUrl ? (
-        <audio id="audioPlayback" controls src={audioUrl}></audio>
-      ) : null}
-      <div>{status}</div>
-    </div>
-  );
+    console.error(error);
+  }, [error]);
+  return <VoiceVisualizer controls={recorderControls} />;
 }
